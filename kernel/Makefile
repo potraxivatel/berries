@@ -1,0 +1,27 @@
+CC      = gcc
+ASM     = nasm
+LD      = ld
+
+CFLAGS   = -m32 -ffreestanding -fno-stack-protector -nostdlib -Iinclude
+ASMFLAGS = -f elf32
+LDFLAGS  = -m elf_i386 -T linker.ld -nostdlib
+
+SRC     = src/main.c src/vga.c
+ASM_SRC = boot/boot.asm
+OBJ     = $(SRC:.c=.o) $(ASM_SRC:.asm=.o)
+
+all: berries-kernel
+
+berries-kernel: $(OBJ)
+	$(LD) $(LDFLAGS) -o $@ $^
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.o: %.asm
+	$(ASM) $(ASMFLAGS) $< -o $@
+
+clean:
+	rm -f $(OBJ) berries-kernel
+
+.PHONY: all clean
