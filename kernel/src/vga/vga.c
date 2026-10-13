@@ -59,3 +59,6 @@ void vga_puts(const char *str) {
         vga_putc(*str++);
     }
 }
+
+
+

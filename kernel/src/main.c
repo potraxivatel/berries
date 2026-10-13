@@ -1,16 +1,8 @@
-#include "vga.h"
+#include "colour.h"
 
-void kernel_main(void) {
-    vga_clear();
-    int i = 0;
-    while (i < 10) {
-      if (i < 10) {
-        vga_puts("Hello from berries kernel!!!\n");
-        i = i + 1;
-      } else {
-        break;
-      }
-    }
+void kernel_main() {
+  colour_b("Hi! I color sea");
+  colour_r("Hi! I terrible");
+  colour_g("Hi! I grass"); 
 }
-
 
