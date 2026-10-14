@@ -1,8 +1,16 @@
 #include "colour.h"
+#include "keyboard.h"
+#include "vga.h"
+
 
 void kernel_main() {
-  colour_b("Hi! I color sea");
-  colour_r("Hi! I terrible");
-  colour_g("Hi! I grass"); 
+ while (true) {
+  if (kb_has_key()) {
+    KeyEvent ev = kb_read_event();
+    if (!ev.released) {
+        char c = kb_scancode_to_char(ev.scancode);
+        if (c != 0) vga_putc(c);
+     }
+   }
+ }
 }
-

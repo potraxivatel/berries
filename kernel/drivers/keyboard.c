@@ -7,55 +7,32 @@
 
 #define STATUS_PORT 0x64
 #define DATA_PORT   0x60
-#define STATUS_DATA 0x01    // бит 0: в буфере лежит байт
+#define STATUS_DATA 0x01
 
-// Состояние клавиатуры. Клавиатура НЕ хранит его за нас:
-// она сообщает только "0x2A нажат" и "0xAA отпущен".
-// Текущее состояние модификаторов помним мы сами.
 static bool shift_down = false;
 static bool ctrl_down  = false;
 static bool caps_lock  = false;
 
-// ---------------------------------------------------------------------------
-// Таблица символов US QWERTY.
-//
-// Ключевой момент: скан-код используется как ИНДЕКС массива.
-// kb_chars[0x1E] сразу равно 'a' — без всяких переборов.
-// Поиск за 1 шаг независимо от того, какую букву нажали.
-//
-// Это и есть отличие от цепочки if / линейного перебора:
-//   for (i = 0; i < 45; i++) if (map[i].sc == sc) ...   // в среднем ~22 сравнения
-//   return kb_chars[sc];                                  // ровно 1 обращение
-//
-// Всё, что не перечислено, автоматически равно 0.
-// ---------------------------------------------------------------------------
 static const char kb_chars[SC_MAX] = {
-    [0x01] = 27,      // Escape
+    [0x01] = 27,
     [0x02] = '1', [0x03] = '2', [0x04] = '3', [0x05] = '4',
     [0x06] = '5', [0x07] = '6', [0x08] = '7', [0x09] = '8',
     [0x0A] = '9', [0x0B] = '0', [0x0C] = '-', [0x0D] = '=',
-    [0x0E] = '\b',     // Backspace
-    [0x0F] = '\t',     // Tab
+    [0x0E] = '\b',
+    [0x0F] = '\t',
     [0x10] = 'q', [0x11] = 'w', [0x12] = 'e', [0x13] = 'r',
     [0x14] = 't', [0x15] = 'y', [0x16] = 'u', [0x17] = 'i',
     [0x18] = 'o', [0x19] = 'p', [0x1A] = '[', [0x1B] = ']',
-    [0x1C] = '\n',     // Enter
-    [0x1D] = 0,        // Left Ctrl — обрабатывается отдельно
+    [0x1C] = '\n',
     [0x1E] = 'a', [0x1F] = 's', [0x20] = 'd', [0x21] = 'f',
     [0x22] = 'g', [0x23] = 'h', [0x24] = 'j', [0x25] = 'k',
     [0x26] = 'l', [0x27] = ';', [0x28] = '\'', [0x29] = '`',
-    [0x2A] = 0,        // Left Shift — обрабатывается отдельно
     [0x2C] = 'z', [0x2D] = 'x', [0x2E] = 'c', [0x2F] = 'v',
     [0x30] = 'b', [0x31] = 'n', [0x32] = 'm', [0x33] = ',',
     [0x34] = '.', [0x35] = '/',
-    [0x38] = 0,        // Left Alt
-    [0x39] = ' ',      // Space
-    [0x3A] = 0,        // Caps Lock
+    [0x39] = ' ',
 };
 
-// Названия клавиш — для отладки. Тут перебор линейный, и это ОК:
-// таблица маленькая и ищется редко. Нужна там, где символа
-// не существует: "Left Ctrl", "Enter", "Caps Lock".
 typedef struct {
     uint8_t scancode;
     const char *name;
@@ -67,8 +44,6 @@ static const KeyName kb_names[] = {
     {0x36, "Right Shift"}, {0x38, "Left Alt"}, {0x3A, "Caps Lock"},
     {0x39, "Space"},    {0x2B, "Backslash"},
 };
-
-// ---------------------------------------------------------------------------
 
 bool kb_has_key(void) {
     return (inb(STATUS_PORT) & STATUS_DATA) != 0;
@@ -85,15 +60,15 @@ KeyEvent kb_read_event(void) {
     KeyEvent ev;
     uint8_t raw = kb_read_raw();
 
-    ev.released = (raw & SC_RELEASE) != 0;   // бит 7 = отпускание
-    ev.scancode = raw & ~SC_RELEASE;        // убрать бит 7
+    ev.released = (raw & SC_RELEASE) != 0;
+    ev.scancode = raw & ~SC_RELEASE;
     if (ev.scancode >= SC_MAX) {
         ev.scancode = 0;
     }
 
-    // Обновляем состояние модификаторов
     switch (ev.scancode) {
-        case 0x2A: case 0x36:
+        case 0x2A:
+        case 0x36:
             shift_down = !ev.released;
             break;
         case 0x1D:
@@ -124,7 +99,6 @@ char kb_scancode_to_char(uint8_t scancode) {
         return 0;
     }
 
-    // Shift делает заглавными только буквы
     bool upper = kb_is_shift();
     if (kb_is_caps() && c >= 'a' && c <= 'z') {
         upper = !upper;
