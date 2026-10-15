@@ -6,7 +6,7 @@ CFLAGS   = -m32 -ffreestanding -fno-stack-protector -nostdlib -Iinclude -Idriver
 ASMFLAGS = -f elf32
 LDFLAGS  = -m elf_i386 -T linker.ld -nostdlib
 
-SRC     = drivers/keyboard/keyboard.c src/main.c drivers/vga/vga.c etc/utility/colour.c etc/utility/calculate.c
+SRC     = drivers/keyboard/keyboard.c src/main.c drivers/vga/vga.c etc/utility/colour.c etc/utility/calculate.c etc/utility/sleep.c
 ASM_SRC = boot/boot.asm drivers/keyboard/asm/keyboard.asm
 OBJ     = $(SRC:.c=.o) $(ASM_SRC:.asm=.o)
 

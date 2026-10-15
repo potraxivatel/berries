@@ -1,29 +1,25 @@
 #include "colour.h"
 #include "keyboard.h"
 #include "vga.h"
+#include "sleep.h"
+
 
 #define SC_ESCAPE 0x01
-
-static void delay(void) {
-    volatile unsigned int i = 0;
-    while (i < 30000000) i++;
-}
-
 
 
 void kernel_main() {
   vga_clear();
 
-  vga_puts("berries kernel. v0.4.0\n");
-
-
+vga_puts("berries kernel. v0.4.0\n");
+  
  while (true) {
   if (kb_has_key()) {
     KeyEvent ev = kb_read_event();
 
     if (ev.scancode == SC_ESCAPE && !ev.released) {
-      colour_r("Bye! \n");
-      delay();
+      colour_r("Balling out...\n");
+      sleep(30000000);
+      colour_g("Y!!!");
       return;
     }
 
@@ -34,3 +30,4 @@ void kernel_main() {
    }
   }
 }
+

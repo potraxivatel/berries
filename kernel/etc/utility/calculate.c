@@ -1,7 +1,7 @@
 #include "vga.h"
 
 
-int calculate(char symvol, int num1, int num2) {
+int calculate(int num1, char symvol, int num2) {
     if (symvol == '+') return num1 + num2;
     if (symvol == '-') return num1 - num2;
     if (symvol == '*') return num1 * num2;
