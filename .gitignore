@@ -1,2 +1,3 @@
 *.o
 berries-kernel
+compile_commands.json

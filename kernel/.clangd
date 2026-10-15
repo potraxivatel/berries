@@ -1,0 +1,9 @@
+# clangd: флаги сборки, чтобы не «додумывал».
+# Пути относительные — clangd резолвит их от каталога compile_commands.json.
+CompileFlags:
+  Add:
+    - -Iinclude
+    - -Idrivers
+    - -m32
+    - -ffreestanding
+    - -fno-stack-protector

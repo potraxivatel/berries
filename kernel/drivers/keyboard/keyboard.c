@@ -12,6 +12,7 @@
 static bool shift_down = false;
 static bool ctrl_down  = false;
 static bool caps_lock  = false;
+static int extended = 0;
 
 static const char kb_chars[SC_MAX] = {
     [0x01] = 27,

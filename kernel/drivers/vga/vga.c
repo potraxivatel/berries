@@ -1,4 +1,7 @@
 #include "vga.h"
+#include "io.h"
+
+
 
 #define VGA_WIDTH   80
 #define VGA_HEIGHT  25
@@ -7,7 +10,7 @@
 static uint16_t *vga_buffer = (uint16_t *)VGA_MEM;
 static int vga_row = 0;
 static int vga_col = 0;
-static uint8_t vga_color = 0x0F;  // белый на чёрном
+static uint8_t vga_color = 0x0F;
 
 void vga_set_color(uint8_t fg, uint8_t bg) {
     vga_color = (bg << 4) | (fg & 0x0F);
@@ -23,6 +26,7 @@ void vga_clear(void) {
     }
     vga_row = 0;
     vga_col = 0;
+    vga_update_hw_cursor();
 }
 
 static void vga_scroll(void) {
@@ -52,6 +56,7 @@ void vga_putc(char c) {
     if (vga_row >= VGA_HEIGHT) {
         vga_scroll();
     }
+    vga_update_hw_cursor();
 }
 
 void vga_puts(const char *str) {
@@ -60,5 +65,50 @@ void vga_puts(const char *str) {
     }
 }
 
+
+
+void vga_backspace(void) {
+    if (vga_col > 0) {
+        vga_col--;
+    } else if (vga_row > 0) {
+        vga_row--;
+        vga_col = VGA_WIDTH - 1;
+    } else {
+        return;                    
+    }
+    
+    vga_buffer[vga_row * VGA_WIDTH + vga_col] = vga_entry(' ', vga_color);
+    vga_update_hw_cursor();
+}
+
+
+
+void vga_move_left(void) {
+    if (vga_col > 0) vga_col--;
+    else if (vga_row > 0) { vga_row--; vga_col = VGA_WIDTH - 1; }
+    vga_update_hw_cursor();
+}
+void vga_move_right(void) {
+    if (vga_col < VGA_WIDTH - 1) vga_col++;
+    else if (vga_row < VGA_HEIGHT - 1) { vga_row++; vga_col = 0; }
+    vga_update_hw_cursor();
+}
+void vga_move_up(void) {
+    if (vga_row > 0) vga_row--;
+    vga_update_hw_cursor();
+}
+void vga_move_down(void) {
+    if (vga_row < VGA_HEIGHT - 1) vga_row++;
+    vga_update_hw_cursor();
+}
+
+
+void vga_update_hw_cursor(void) {
+    uint16_t pos = vga_row * VGA_WIDTH + vga_col;
+    outb(0x3D4, 0x0F);
+    outb(0x3D5, pos & 0xFF);
+    outb(0x3D4, 0x0E);              
+    outb(0x3D5, (pos >> 8) & 0xFF);
+}
 
 
